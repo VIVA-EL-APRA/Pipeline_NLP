@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline NLP</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pipeline de NLP</h1>
+            <p class="subtitle">Segmentación → Tokenización → Lematización → POS Tagging → Stopwords</p>
+        </header>
+
+        <form method="POST" class="card">
+            <div class="form-group">
+                <label for="texto">Texto a procesar</label>
+                <textarea id="texto" name="texto" rows="4" placeholder="Ingresa tu texto aquí...">{{ texto }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Seleccionar etapa del pipeline</label>
+                <div class="etapas-grid">
+                    <label class="etapa-radio">
+                        <input type="radio" name="etapa" value="todas" {{ 'checked' if etapa_activa == 'todas' or not etapa_activa }}>
+                        <span class="radio-label">Pipeline completo</span>
+                    </label>
+                    <label class="etapa-radio">
+                        <input type="radio" name="etapa" value="frases" {{ 'checked' if etapa_activa == 'frases' }}>
+                        <span class="radio-label">1. Segmentación</span>
+                    </label>
+                    <label class="etapa-radio">
+                        <input type="radio" name="etapa" value="tokens" {{ 'checked' if etapa_activa == 'tokens' }}>
+                        <span class="radio-label">2. Tokenización</span>
+                    </label>
+                    <label class="etapa-radio">
+                        <input type="radio" name="etapa" value="lemas" {{ 'checked' if etapa_activa == 'lemas' }}>
+                        <span class="radio-label">3. Lematización</span>
+                    </label>
+                    <label class="etapa-radio">
+                        <input type="radio" name="etapa" value="pos" {{ 'checked' if etapa_activa == 'pos' }}>
+                        <span class="radio-label">4. POS Tagging</span>
+                    </label>
+                    <label class="etapa-radio">
+                        <input type="radio" name="etapa" value="sin_stopwords" {{ 'checked' if etapa_activa == 'sin_stopwords' }}>
+                        <span class="radio-label">5. Stopwords</span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">Procesar texto</button>
+        </form>
+
+        {% if resultado %}
+        <div class="resultados">
+            <div class="card resultado-card">
+                <h2>Texto bruto</h2>
+                <div class="texto-bruto">{{ resultado.texto_bruto }}</div>
+            </div>
+
+            {% if etapa_activa == 'todas' or etapa_activa == 'frases' %}
+            <div class="card resultado-card">
+                <h2>1. Segmentación en frases</h2>
+                <p class="count">{{ resultado.frases|length }} frase(s) detectada(s)</p>
+                <ol class="lista-frases">
+                    {% for frase in resultado.frases %}
+                    <li>{{ frase }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endif %}
+
+            {% if etapa_activa == 'todas' or etapa_activa == 'tokens' %}
+            <div class="card resultado-card">
+                <h2>2. Tokenización</h2>
+                <p class="count">{{ resultado.tokens|length }} token(s)</p>
+                <div class="token-cloud">
+                    {% for token in resultado.tokens %}
+                    <span class="token-badge">{{ token }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if etapa_activa == 'todas' or etapa_activa == 'lemas' %}
+            <div class="card resultado-card">
+                <h2>3. Lematización</h2>
+                <p class="count">{{ resultado.lemas|length }} lema(s)</p>
+                <div class="tabla-container">
+                    <table>
+                        <thead>
+                            <tr><th>Token original</th><th>Lema</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for item in resultado.lemas %}
+                            <tr>
+                                <td>{{ item.token }}</td>
+                                <td><strong>{{ item.lemma }}</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if etapa_activa == 'todas' or etapa_activa == 'pos' %}
+            <div class="card resultado-card">
+                <h2>4. POS Tagging</h2>
+                <p class="count">{{ resultado.pos|length }} etiqueta(s)</p>
+                <div class="tabla-container">
+                    <table>
+                        <thead>
+                            <tr><th>Token</th><th>EAGLES</th><th>POS</th><th>Explicación</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for item in resultado.pos %}
+                            <tr>
+                                <td>{{ item.token }}</td>
+                                <td><code>{{ item.eagles }}</code></td>
+                                <td><span class="pos-badge">{{ item.pos }}</span></td>
+                                <td class="explicacion">{{ item.explicacion }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if etapa_activa == 'todas' or etapa_activa == 'sin_stopwords' %}
+            <div class="card resultado-card">
+                <h2>5. Eliminación de stopwords</h2>
+                <p class="count">{{ resultado.sin_stopwords|length }} token(s) relevantes</p>
+                <div class="tabla-container">
+                    <table>
+                        <thead>
+                            <tr><th>#</th><th>Token</th><th>Lema</th><th>EAGLES</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for item in resultado.sin_stopwords %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ item.token }}</td>
+                                <td>{{ item.lemma }}</td>
+                                <td><code>{{ item.eagles }}</code></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <footer>
+            <p>Pipeline NLP con spaCy · Actividad práctica</p>
+        </footer>
+    </div>
+</body>
+</html>
