@@ -63,10 +63,8 @@ python pipeline_nlp.py --json
    - Runtime: **Python**
    - Build Command: `pip install -r requirements.txt && python -m spacy download es_core_news_lg`
    - Start Command: `gunicorn app:app`
-4. Desplegar
+4. Infografia
+https://viva-el-apra.github.io/Pipeline-NLP/
 
-El servicio quedará disponible en `https://<nombre>.onrender.com`
 
-## Créditos
 
-Construido de forma agéntica con [OpenCode](https://opencode.ai) y spaCy.
